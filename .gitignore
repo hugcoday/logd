@@ -9,10 +9,13 @@ _test
 logs
 var
 .vscode
+tmp
 
 # Architecture specific extensions/prefixes
 *.[568vq]
 [568vq].out
+debug
+
 
 *.cgo1.go
 *.cgo2.c
