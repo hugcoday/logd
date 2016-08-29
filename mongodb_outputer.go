@@ -491,18 +491,18 @@ func (this *MongoDbOutputer) reloadFileCache() {
 func (this *MongoDbOutputer) parseLogLine(line string) (m bson.M) {
 	loglib.Info(line)
 
-	// slen := len(line)
-	// //截取ip
-	// p1 := strings.Index(line, " ")
-	// p2 := slen
-	// if p1 > 0 && p1 < slen-1 {
-	// 	p := strings.Index(line[p1+1:], " ")
-	// 	if p > 0 {
-	// 		p2 = p + p1 + 1 //注意！p只是slice中的index，不是line中的
-	// 	}
-	// } else {
-	// 	p1 = 0
-	// }
+	slen := len(line)
+	//截取 时间
+	p1 := strings.Index(line, " ")
+	p2 := slen
+	if p1 > 0 && p1 < slen-1 {
+		p := strings.Index(line[p1+1:], " ")
+		if p > 0 {
+			p2 = p + p1 + 1 //注意！p只是slice中的index，不是line中的
+		}
+	} else {
+		p1 = 0
+	}
 	// ipInLong := lib.IpToUint32(line[p1+1 : p2])
 	// // host第一段
 	// p1 = strings.Index(line, ".")
@@ -510,22 +510,30 @@ func (this *MongoDbOutputer) parseLogLine(line string) (m bson.M) {
 	// //截取时间
 	// p1 = strings.Index(line, "[")
 	// p2 = strings.Index(line, "]")
-	// hourStr := line[p1+1 : p2]
-	// var timestamp int64 = 0
-	// var day int = 0
-	// var hour int = -1
-	// tm, err := time.ParseInLocation("02/Jan/2006:15:04:05 -0700", hourStr, time.Local)
-	// if err != nil {
-	// 	loglib.Warning("parse time error" + err.Error())
-	// } else {
-	// 	timestamp = tm.Unix()
-	// 	dayStr := tm.Format("20060102")
-	// 	day, err = strconv.Atoi(dayStr)
-	// 	if err != nil {
-	// 		loglib.Error(fmt.Sprintf("conv %s to int error: %v", dayStr, err))
-	// 	}
-	// 	hour = tm.Hour()
-	// }
+	hourStr := line[0:p2]
+
+	var timestamp int64
+	var day int
+	var hour int
+	var timeFormat string
+	if p2-p1 > 19 {
+		timeFormat = "2006-01-02 15:04:05.000"
+	} else {
+		timeFormat = "2006-01-02 15:04:05"
+	}
+	tm, err := time.Parse(timeFormat, hourStr)
+	if err != nil {
+		loglib.Warning("parse time error" + err.Error())
+	} else {
+		timestamp = tm.Unix()
+		dayStr := tm.Format("20060102")
+		day, err = strconv.Atoi(dayStr)
+
+		if err != nil {
+			loglib.Error(fmt.Sprintf("conv %s to int error: %v", dayStr, err))
+		}
+		hour = tm.Hour()
+	}
 	// //截取请求url
 	// urlStr := ""
 	// p3 := strings.Index(line, "\"")
@@ -534,7 +542,11 @@ func (this *MongoDbOutputer) parseLogLine(line string) (m bson.M) {
 	// parts := strings.Split(reqStr, " ")
 
 	m = make(bson.M)
-	m["12"] = line
+
+	m["ctime"] = timestamp
+	m["day"] = day
+	m["hour"] = hour
+	m["log"] = line
 	// if len(parts) == 3 {
 	// 	urlStr = parts[1]
 	// 	u, err := url.Parse(urlStr)
