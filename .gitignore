@@ -10,10 +10,11 @@ logs
 var
 .vscode
 tmp
+tempfile
 
 # Architecture specific extensions/prefixes
-*.[568vq]
-[568vq].out
+logd.exe*
+logd
 debug
 
 

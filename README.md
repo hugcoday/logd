@@ -18,7 +18,10 @@ please download the zip file directly.
     monitor 监控中心，用来探测服务是否活着
 3、启动顺序
     3.1 启动monitor : logd monitor ./conf/monitor.ini
-    3.2 启动collector : logd collector
+    3.2 启动collector : logd mgocollector 数据存储在mongodb中
     3.3 启动 tail: logd tail ./conf/config.ini ，此功能只能在linux使用，必须要有tail命令
+
+4、不足
+    目前只能读取带日期格式的日志，mongodb的库的名字也依赖这个日期格式了
     
 
